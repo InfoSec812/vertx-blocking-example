@@ -1,0 +1,15 @@
+.gradle
+build/
+g
+gradle-app.setting
+!gradle-wrapper.jar
+
+.gradletasknamecache
+
+.idea
+.idea/**
+*.iws
+/out/
+.idea_modules/
+.vertx
+.vertx/**
