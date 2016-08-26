@@ -24,6 +24,7 @@ def vertxVersion = '3.3.2'
 dependencies {
     compile group: 'io.vertx', name: 'vertx-core', version: vertxVersion
     compile group: 'io.vertx', name: 'vertx-web', version: vertxVersion
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.16.8'
 }
 
 task fatJar(type: Jar) {
