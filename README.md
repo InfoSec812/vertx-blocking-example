@@ -12,8 +12,24 @@ java -jar ./build/libs/example-all-1.0-SNAPSHOT.jar
 
 ## Test
 ```
+export CURL_OPTS='-v -X POST -d "email=john.doe%40comecompany.com" -H "Content-Type: application/x-www-form-urlencoded"'
+
 ## This causes event loop to block
-$ curl -v http://localhost:1080/blocking
+$ curl $CURL_OPTS http://localhost:1080/blockingB
+*   Trying 127.0.0.1...
+* Connected to localhost (127.0.0.1) port 1080 (#0)
+> GET /blocking HTTP/1.1
+> Host: localhost:1080
+> User-Agent: curl/7.47.0
+> Accept: */*
+> 
+< HTTP/1.1 500 Internal Server Error
+< Content-Length: 21
+< 
+* Connection #0 to host localhost left intact
+
+## This throws IllegalStateException (intermittently)
+$ curl $CURL_OPTS http://localhost:1080/blockingA
 *   Trying 127.0.0.1...
 * Connected to localhost (127.0.0.1) port 1080 (#0)
 > GET /blocking HTTP/1.1
@@ -28,7 +44,7 @@ $ curl -v http://localhost:1080/blocking
 
 
 ## This does not cause any problems
-$ curl -v http://localhost:1080/nonblocking
+$ curl $CURL_OPTS http://localhost:1080/nonblocking
 *   Trying 127.0.0.1...
 * Connected to localhost (127.0.0.1) port 1080 (#0)
 > GET /nonblocking HTTP/1.1
