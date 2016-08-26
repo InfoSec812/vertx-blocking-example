@@ -106,10 +106,8 @@ public class ExampleVerticle extends AbstractVerticle {
                 LOG.log(Level.WARNING, ie.getLocalizedMessage(), ie);
             }
         }
-        ctx.request().endHandler(v -> {
-            // Calling from within the endHandler causes the event loop to be blocked.
-            process(ctx);
-        });
+        // Calling from within the endHandler causes the event loop to be blocked.
+        process(ctx);
     }
 
     void aBlockingMethod() throws InterruptedException {
