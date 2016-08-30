@@ -24,14 +24,7 @@ public class ExampleVerticle extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         Router router = Router.router(vertx);
-        router.route().handler(ctx -> {
-            if (ctx.request().path().startsWith("/blocking")) {
-                ctx.request().setExpectMultipart(true);
-            }
-            ctx.request().exceptionHandler(this::execptionHandler);
-            ctx.response().exceptionHandler(this::execptionHandler);
-            ctx.next();
-        });
+        router.post("/blocking*").handler(this::setExpectMultipart);
         router.post("/nonblocking*").handler(this::nonBlockingHandler);
         router.post("/blockingA").blockingHandler(this::blockingHandlerA, false);
         router.post("/blockingB").blockingHandler(this::blockingHandlerB, false);
@@ -41,6 +34,13 @@ public class ExampleVerticle extends AbstractVerticle {
         router.post("/blockingPC").blockingHandler(this::blockingHandlerC);
 
         vertx.createHttpServer().requestHandler(router::accept).listen(1080);
+    }
+
+    void setExpectMultipart(RoutingContext ctx) {
+        ctx.request().setExpectMultipart(true);
+        ctx.request().exceptionHandler(this::execptionHandler);
+        ctx.response().exceptionHandler(this::execptionHandler);
+        ctx.next();
     }
 
     void nonBlockingHandler(RoutingContext ctx) {
