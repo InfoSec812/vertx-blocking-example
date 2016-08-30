@@ -24,6 +24,14 @@ public class ExampleVerticle extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         Router router = Router.router(vertx);
+        router.route().handler(ctx -> {
+            if (ctx.request().path().startsWith("/blocking")) {
+                ctx.request().setExpectMultipart(true);
+            }
+            ctx.request().exceptionHandler(this::execptionHandler);
+            ctx.response().exceptionHandler(this::execptionHandler);
+            ctx.next();
+        });
         router.post("/nonblocking*").handler(this::nonBlockingHandler);
         router.post("/blockingA").blockingHandler(this::blockingHandlerA, false);
         router.post("/blockingB").blockingHandler(this::blockingHandlerB, false);
@@ -36,9 +44,6 @@ public class ExampleVerticle extends AbstractVerticle {
     }
 
     void nonBlockingHandler(RoutingContext ctx) {
-        ctx.request().exceptionHandler(this::execptionHandler);
-        ctx.response().exceptionHandler(this::execptionHandler);
-        ctx.request().setExpectMultipart(true);
         ctx.request().endHandler(v -> {
             vertx.executeBlocking(future -> {
                 try {
@@ -78,27 +83,31 @@ public class ExampleVerticle extends AbstractVerticle {
         LOG.log(Level.WARNING, "My error handler", t);
     }
 
+    /**
+     * After moving setExpectMultipart to the default route handler before the blockingHandler, this works fine!
+     * @param ctx
+     */
     void blockingHandlerA(RoutingContext ctx) {
-        ctx.request().setExpectMultipart(true);
-        ctx.request().exceptionHandler(this::execptionHandler);
-        ctx.response().exceptionHandler(this::execptionHandler);
         process(ctx);
     }
 
+    /**
+     * THIS will not work... Even after adding setExpectMultipart in the default route handler
+     * @param ctx
+     */
     void blockingHandlerB(RoutingContext ctx) {
-        ctx.request().exceptionHandler(this::execptionHandler);
-        ctx.response().exceptionHandler(this::execptionHandler);
-        ctx.request().setExpectMultipart(true);
         ctx.request().endHandler(v -> {
             // Calling from within the endHandler causes the event loop to be blocked.
             process(ctx);
         });
     }
 
+    /**
+     * After moving setExpectMultipart to the default route handler before the blockingHandler, this works fine; but is
+     * if probably excessive...
+     * @param ctx
+     */
     void blockingHandlerC(RoutingContext ctx) {
-        ctx.request().exceptionHandler(this::execptionHandler);
-        ctx.response().exceptionHandler(this::execptionHandler);
-        ctx.request().setExpectMultipart(true);
         while (!ctx.request().isEnded()) {
             try {
                 Thread.sleep(10);
